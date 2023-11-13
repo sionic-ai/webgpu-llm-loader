@@ -33,6 +33,10 @@ export default function Home() {
     const [modelUrl, setModelUrl] = useState('');
     const [modelLibMap, setModelLibMap] = useState('');
 
+    const loadHandler = () => {
+        console.log('!')
+    }
+
     useEffect(() => {
         if (MODEL_PRESET[selected]) {
             setModelUrl(MODEL_PRESET[selected].url);
@@ -108,7 +112,7 @@ export default function Home() {
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <Button className="w-full">Continue</Button>
+                        <Button className="w-full" onClick={loadHandler}>Continue</Button>
                     </CardFooter>
                 </Card>
             </div>
