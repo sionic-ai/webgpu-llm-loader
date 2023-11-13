@@ -4,7 +4,8 @@ export default function Document() {
     return (
         <Html lang="en">
             <Head>
-                <meta name="description" content="WASM LLM Loader" />
+                <title>WebGPU LLM Loader</title>
+                <meta name="description" content="WebGPU LLM Loader" />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <body>
