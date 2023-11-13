@@ -53,14 +53,14 @@ export default function PlaygroundPage() {
     return (
         <div className="h-full flex-col md:flex">
             <div className="container flex flex-col items-start justify-between space-y-2 py-4 sm:flex-row sm:items-center sm:space-y-0 md:h-16">
-                <h2 className="text-lg font-semibold">Playground</h2>
+                <h2 className="text-lg font-semibold">Chat</h2>
                 <ChatFooter />
             </div>
             <Separator />
 
             <div className="flex md:h-full max-md:h-[calc(100%-50px)] w-full flex-col items-stretch">
                 <div
-                    className="relative flex flex-1 flex-col items-stretch overflow-auto border-b pb-[10rem] overflow-x-hidden
+                    className="relative flex flex-1 flex-col items-stretch overflow-auto pb-[10rem] overflow-x-hidden
                 scrollbar scrollbar-w-3 scrollbar-thumb-[rgb(var(--bg-primary))] scrollbar-track-[rgb(var(--bg-secondary))] scrollbar-thumb-rounded-full"
                     ref={messageContainer}
                 >
