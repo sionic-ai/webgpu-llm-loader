@@ -13,7 +13,6 @@ export interface LLMSystemMessage {
 export interface AddMessageOption {
     content: string;
     systemMessageContent: string;
-    ragResult: string[];
     role?: "user" | "assistant";
     isSubmit?: boolean;
 }

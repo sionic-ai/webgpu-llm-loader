@@ -230,14 +230,11 @@ export default function LLMProvider({ children }: PropsWithChildren) {
     const submit = useCallback(async (
         systemMessage: LLMSystemMessage = DEFAULT_SYSTEM_MESSAGE,
         newMessage: LLMChatMessage,
-        ragResult: string[],
     ) => {
         if (loading) return;
         setLoading(true);
 
         try {
-            //TODO: Language와 RAG 결과를 저장하자
-
             // 응답 메시지 생성
             const resMessage = {
                 id: messages.length,
@@ -252,7 +249,7 @@ export default function LLMProvider({ children }: PropsWithChildren) {
 
             await webLLMApi.current?.completion([systemMessage, ...messages, newMessage].map(
                 ({ role, content }) => ({ role, content })
-            ), ragResult, Comlink.proxy((_step: number, chunkValue: string) => {
+            ), Comlink.proxy((_step: number, chunkValue: string) => {
                 resMessage.content = chunkValue;
 
                 updateMessageContent(resMessage.id as number, resMessage.content);
@@ -275,7 +272,7 @@ export default function LLMProvider({ children }: PropsWithChildren) {
 
 
     const addMessage = useCallback(({
-        content, systemMessageContent, ragResult,
+        content, systemMessageContent,
         role = "user", isSubmit = true,
     }: AddMessageOption) => {
         const message = { role, content } as LLMChatMessage;
@@ -289,7 +286,7 @@ export default function LLMProvider({ children }: PropsWithChildren) {
         isSubmit && submit({
             role: "system",
             content: systemMessageContent,
-        }, message, ragResult);
+        }, message);
     }, [submit]);
 
     const value = React.useMemo(

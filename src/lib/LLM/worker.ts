@@ -64,26 +64,24 @@ class LLMSingleton {
         }
     }
 
-    static makePrompt = (messages: LLMChatMessage[], ragResult?: string[]): string => {
+    static makePrompt = (messages: LLMChatMessage[]): string => {
         //! 현재 webLLM은 마지막 질문만 추가해서 generate를 한다.
         //! 따라서, 임시로 prompt를 만들 때 RAG 결과가 담긴 시스템 메시지와 마지막 메시지를 추가한다.
         // const prompt = messages.map(m => m.content).join(' ');
         const systemMessage = messages.find(m => m.role === 'system') as { role: string, content: string };
         const lastQuestionMessage = messages.filter(m => m.role === 'user').pop() as { role: string, content: string };
-        const ragContent = ragResult ? ragResult.map(text => `\n###\ngiven: ${text}`).join('') : '';
 
-        return `${systemMessage.content}${ragContent}\n###\nquestion: ${lastQuestionMessage.content}`;
+        return `${systemMessage.content}\n###\nquestion: ${lastQuestionMessage.content}`;
     }
 
     static async completion(
         messages: LLMChatMessage[],
-        ragResult: string[],
         generateProgressCallback: (_step: number, message: string) => void,
     ) {
         const chat = await this.getInstance();
 
         // 프롬프트 구성
-        const prompt = this.makePrompt(messages, ragResult);
+        const prompt = this.makePrompt(messages);
         console.log('[WORKER: webLLM] prompt: ', prompt);
 
         // webLLM API 호출
