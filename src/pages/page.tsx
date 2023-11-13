@@ -4,46 +4,82 @@ import Image from 'next/image'
 import { useEffect, useState } from "react"
 
 import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import {
     Card, CardContent, CardDescription,
     CardFooter, CardHeader, CardTitle,
 } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import {
+    AlertDialog, AlertDialogAction, AlertDialogContent,
+    AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
-const MODEL_PRESET: Record<string, { url: string, libMap: string }> = {
+import { useLLM } from '@/context/LLMProvider';
+
+const MODEL_PRESET: Record<string, { url: string, localId: string, wasmUrl: string }> = {
     '7b': {
         url: 'https://huggingface.co/sionic-ai/chat-Llama-2-7b-chat-hf-q4f32_1/resolve/main/',
-        libMap: './model-lib/Llama-2-7b-chat-hf-q4f32_1-webgpu.wasm',
+        localId: 'Llama-2-7b-chat-hf-q4f32_1',
+        wasmUrl: '/model-lib/Llama-2-7b-chat-hf-q4f32_1-webgpu.wasm'
     },
     '13b': {
         url: 'https://huggingface.co/sionic-ai/chat-Llama-2-13b-chat-hf-q4f32_1/resolve/main/',
-        libMap: './model-lib/Llama-2-13b-chat-hf-q4f32_1-webgpu.wasm',
+        localId: 'Llama-2-13b-chat-hf-q4f32_1',
+        wasmUrl: '/model-lib/Llama-2-13b-chat-hf-q4f32_1-webgpu.wasm'
     },
     '70b': {
         url: 'https://huggingface.co/sionic-ai/chat-Llama-2-70b-chat-hf-q4f16_1/resolve/main/',
-        libMap: './model-lib/Llama-2-70b-chat-hf-q4f16_1-webgpu.wasm',
+        localId: 'Llama-2-70b-chat-hf-q4f16_1',
+        wasmUrl: '/model-lib/Llama-2-70b-chat-hf-q4f16_1-webgpu.wasm'
     }
 };
 
-
 export default function Home() {
+    const { initLocalLLM, isInitLocalLLM } = useLLM();
     const [selected, setSelected] = useState('7b');
     const [modelUrl, setModelUrl] = useState('');
-    const [modelLibMap, setModelLibMap] = useState('');
+    const [modelLocalId, setModelLocalId] = useState('');
+    const [wasmUrl, setWasmUrl] = useState('');
 
-    const loadHandler = () => {
-        console.log('!')
+    const [progress, setProgress] = useState(0);
+    const [elapsedTime, setElapsedTime] = useState(0);
+    const [outputText, setOutputText] = useState('');
+
+    const fileHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const result = e.target?.result;
+                if (typeof result === 'string') {
+                    setWasmUrl(result);
+                }
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    const loadHandler = async () => {
+        const { success, message } = await initLocalLLM(modelLocalId, modelUrl, wasmUrl, (progress: number, timeElapsed: number, text: string) => {
+            setProgress(progress);
+            setElapsedTime(Math.trunc(timeElapsed));
+            setOutputText(text)
+        })
+        console.log('[loadHandler]', success, message);
     }
 
     useEffect(() => {
         if (MODEL_PRESET[selected]) {
             setModelUrl(MODEL_PRESET[selected].url);
-            setModelLibMap(MODEL_PRESET[selected].libMap);
+            setModelLocalId(MODEL_PRESET[selected].localId);
+            setWasmUrl(MODEL_PRESET[selected].wasmUrl);
         } else {
             setModelUrl('');
-            setModelLibMap('');
+            setModelLocalId('');
+            setWasmUrl('');
         }
     }, [selected]);
 
@@ -62,12 +98,12 @@ export default function Home() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-6">
-                        <RadioGroup defaultValue="card" className="grid grid-cols-4 gap-4">
+                        <RadioGroup defaultValue="7b" className="grid grid-cols-4 gap-4">
                             <div>
                                 <RadioGroupItem value="7b" id="7b" className="peer sr-only" onClick={e => setSelected(e.currentTarget.value)} />
                                 <Label
                                     htmlFor="7b"
-                                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                                    className="cursor-pointer flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
                                 >
                                     <Image src="/llama.png" alt="Llama2 7B Chat" width={180} height={37} />
                                     Llama 2 7B Chat
@@ -77,7 +113,7 @@ export default function Home() {
                                 <RadioGroupItem value="13b" id="13b" className="peer sr-only" onClick={e => setSelected(e.currentTarget.value)} />
                                 <Label
                                     htmlFor="13b"
-                                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                                    className="cursor-pointer flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
                                 >
                                     <Image src="/llama.png" alt="Llama2 7B Chat" width={180} height={37} />
                                     Llama 2 13B Chat
@@ -87,7 +123,7 @@ export default function Home() {
                                 <RadioGroupItem value="70b" id="70b" className="peer sr-only" onClick={e => setSelected(e.currentTarget.value)} />
                                 <Label
                                     htmlFor="70b"
-                                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                                    className="cursor-pointer flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
                                 >
                                     <Image src="/llama.png" alt="Llama2 7B Chat" width={180} height={37} />
                                     Llama 2 70B Chat
@@ -97,7 +133,7 @@ export default function Home() {
                                 <RadioGroupItem value="custom" id="custom" className="peer sr-only" onClick={e => setSelected(e.currentTarget.value)} />
                                 <Label
                                     htmlFor="custom"
-                                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                                    className="cursor-pointer flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
                                 >
                                     <Image src="/wasm.png" alt="Custom Model" width={180} height={37} />
                                     Custom Model
@@ -105,14 +141,47 @@ export default function Home() {
                             </div>
                         </RadioGroup>
                         <div className="grid gap-2 mt-8">
+                            <Label htmlFor="model-local-id">Model Local Id</Label>
+                            <Input id="model-local-id"
+                                value={modelLocalId}
+                                disabled={selected !== 'custom'}
+                                onChange={e => setModelLocalId(e.currentTarget.value)}
+                            />
                             <Label htmlFor="model-url">Model URL</Label>
-                            <Input id="model-url" value={modelUrl} disabled={selected !== 'custom'} />
-                            <Label htmlFor="model-url">Model Lib Map</Label>
-                            <Input id="model-url" value={modelLibMap} disabled={selected !== 'custom'} />
+                            <Input id="model-url"
+                                value={modelUrl}
+                                disabled={selected !== 'custom'}
+                                onChange={e => setModelUrl(e.currentTarget.value)}
+                            />
+                            <Label htmlFor="model-wasm">WASM File</Label>
+                            <Input id="model-wasm" className="cursor-pointer" type="file" accept='.wasm'
+                                disabled={selected !== 'custom'}
+                                onChange={fileHandler}
+                            />
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <Button className="w-full" onClick={loadHandler}>Continue</Button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button className="w-full" onClick={loadHandler}>Load</Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>LLM takes some time to load.</AlertDialogTitle>
+                                    <div>
+                                        <Progress value={progress} className='mb-4' />
+                                        <div className='font-bold'>Elapsed Time: {elapsedTime} sec</div>
+                                        <div className='font-bold'>Output Text</div>
+                                        <div className='text-sm text-slate-500 italic truncate max-w-md'>{outputText}</div>
+                                    </div>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter className={isInitLocalLLM ? "" : "hidden"}>
+                                    <AlertDialogAction asChild>
+                                        <Button className="w-full">Continue!</Button>
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </CardFooter>
                 </Card>
             </div>
