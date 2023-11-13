@@ -1,7 +1,8 @@
 'use client';
 
-import Image from 'next/image'
 import { useEffect, useState } from "react"
+import Image from 'next/image'
+import { useRouter } from "next/router";
 
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -38,7 +39,9 @@ const MODEL_PRESET: Record<string, { url: string, localId: string, wasmUrl: stri
 };
 
 export default function Home() {
+    const router = useRouter();
     const { initLocalLLM, isInitLocalLLM } = useLLM();
+
     const [selected, setSelected] = useState('7b');
     const [modelUrl, setModelUrl] = useState('');
     const [modelLocalId, setModelLocalId] = useState('');
@@ -70,6 +73,12 @@ export default function Home() {
         })
         console.log('[loadHandler]', success, message);
     }
+
+    useEffect(() => {
+        if (isInitLocalLLM) {
+            router.push('/chat');
+        }
+    }, []);
 
     useEffect(() => {
         if (MODEL_PRESET[selected]) {
@@ -177,7 +186,9 @@ export default function Home() {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter className={isInitLocalLLM ? "" : "hidden"}>
                                     <AlertDialogAction asChild>
-                                        <Button className="w-full">Continue!</Button>
+                                        <Button className="w-full" onClick={() => {
+                                            router.push('/chat');
+                                        }}>Continue!</Button>
                                     </AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
