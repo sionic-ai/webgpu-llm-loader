@@ -22,17 +22,17 @@ import { useLLM } from '@/context/LLMProvider';
 
 const MODEL_PRESET: Record<string, { url: string, localId: string, wasmUrl: string }> = {
     '7b': {
-        url: 'https://huggingface.co/sionic-ai/chat-Llama-2-7b-chat-hf-q4f32_1/resolve/main/',
+        url: 'https://huggingface.co/sionic-ai/chat-Llama-2-7b-chat-hf-q4f32_1',
         localId: 'Llama-2-7b-chat-hf-q4f32_1',
         wasmUrl: '/model-lib/Llama-2-7b-chat-hf-q4f32_1-webgpu.wasm'
     },
     '13b': {
-        url: 'https://huggingface.co/sionic-ai/chat-Llama-2-13b-chat-hf-q4f32_1/resolve/main/',
+        url: 'https://huggingface.co/sionic-ai/chat-Llama-2-13b-chat-hf-q4f32_1',
         localId: 'Llama-2-13b-chat-hf-q4f32_1',
         wasmUrl: '/model-lib/Llama-2-13b-chat-hf-q4f32_1-webgpu.wasm'
     },
     '70b': {
-        url: 'https://huggingface.co/sionic-ai/chat-Llama-2-70b-chat-hf-q4f16_1/resolve/main/',
+        url: 'https://huggingface.co/sionic-ai/chat-Llama-2-70b-chat-hf-q4f16_1',
         localId: 'Llama-2-70b-chat-hf-q4f16_1',
         wasmUrl: '/model-lib/Llama-2-70b-chat-hf-q4f16_1-webgpu.wasm'
     }
@@ -66,7 +66,13 @@ export default function Home() {
     }
 
     const loadHandler = async () => {
-        const { success, message } = await initLocalLLM(modelLocalId, modelUrl, wasmUrl, (progress: number, timeElapsed: number, text: string) => {
+        const modelUrl_ = (
+            (modelUrl.lastIndexOf('/') === modelUrl.length - 1) ?
+                modelUrl.slice(0, -1) :
+                modelUrl
+        ) + '/resolve/main/';
+
+        const { success, message } = await initLocalLLM(modelLocalId, modelUrl_, wasmUrl, (progress: number, timeElapsed: number, text: string) => {
             setProgress(progress);
             setElapsedTime(Math.trunc(timeElapsed));
             setOutputText(text)
@@ -95,7 +101,7 @@ export default function Home() {
     return (
         <main className="flex min-h-screen flex-col items-center px-24 py-8">
             <div className="p-9 relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-                <Image src="/webgpu.png" alt="Llama2 7B Chat" width={64} height={64} className="mr-2"/>
+                <Image src="/webgpu.png" alt="Llama2 7B Chat" width={64} height={64} className="mr-2" />
                 <h2 className="text-5xl font-bold tracking-tight">WebGPU LLM Loader</h2>
             </div>
 
