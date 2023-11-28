@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator"
 import ChatMessage from "@/components/chat/ChatMessage"
 import ChatInput from "@/components/chat/ChatInput"
 import ChatPlaceholder from "@/components/chat/ChatPlaceholder"
-import ChatFooter from "@/components/chat/ChatFooter"
+import Footer from "@/components/Footer"
 import { useLLM } from "@/context/LLMProvider";
 
 export default function PlaygroundPage() {
@@ -54,7 +54,7 @@ export default function PlaygroundPage() {
         <div className="h-full flex-col md:flex">
             <div className="container flex flex-col items-start justify-between space-y-2 py-4 sm:flex-row sm:items-center sm:space-y-0 md:h-16">
                 <h2 className="text-lg font-semibold">Chat</h2>
-                <ChatFooter />
+                <Footer />
             </div>
             <Separator />
 

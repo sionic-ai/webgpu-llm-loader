@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 import { useLLM } from '@/context/LLMProvider';
+import Footer from "@/components/Footer";
 
 const MODEL_PRESET: Record<string, { url: string, localId: string, wasmUrl: string }> = {
     '7b': {
@@ -203,6 +204,7 @@ export default function Home() {
                     </CardFooter>
                 </Card>
             </div>
+            <Footer />
         </main>
     )
 }
